@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff1e8">
+  <title>Doodle Duet · draw &amp; guess for two</title>
+  <meta name="description" content="A draw-and-guess game for two. Your doodle travels inside the link: no accounts, no servers.">
+  <meta property="og:title" content="Doodle Duet 💞">
+  <meta property="og:description" content="I drew you something. Can you guess what it is?">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💞</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-screen="home">
+<div id="app">
+  <header class="topbar">
+    <button class="icon-btn" id="btn-home" aria-label="Home">🏠</button>
+    <div class="team-chip hidden" id="team-chip"></div>
+    <button class="icon-btn" id="btn-sound" aria-label="Toggle sound">🔊</button>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section class="screen center" data-screen="home">
+      <div class="hero">
+        <div class="hero-doodles" aria-hidden="true"><span>✏️</span><span>💞</span><span>🖍️</span></div>
+        <h1 class="logo">Doodle<span>Duet</span></h1>
+        <p class="tagline">One of you draws. One of you guesses.<br>You both win (hopefully).</p>
+      </div>
+      <label class="field">
+        <span>Your name</span>
+        <input id="my-name" class="name-input" maxlength="16" placeholder="e.g. Alex" autocomplete="given-name" enterkeyhint="go">
+      </label>
+      <button class="btn btn-primary btn-xl" id="btn-play">Play ▶</button>
+      <div class="row">
+        <button class="btn" id="btn-gallery">🖼️ Our gallery</button>
+        <button class="btn" id="btn-how">❓ How it works</button>
+      </div>
+      <div class="card how hidden" id="how">
+        <ol>
+          <li><b>🎨 Artist</b> gets a secret word and doodles it with a finger.</li>
+          <li><b>💌 Send</b>: the whole drawing gets packed into a link. Drop it in any chat.</li>
+          <li><b>🔍 Guesser</b> opens the link, watches the doodle come to life, and has 3 hearts to guess it.</li>
+          <li><b>💞 Team points</b>: you score together. Swap roles and keep the streak alive.</li>
+        </ol>
+        <p class="tiny">No accounts, no servers. Everything lives inside the link and on your phones.</p>
+      </div>
+    </section>
+
+    <!-- ROLE -->
+    <section class="screen" data-screen="role">
+      <h2>Who are you this round?</h2>
+      <label class="field">
+        <span>Partner's name</span>
+        <input id="partner-name" maxlength="16" placeholder="Who are you playing with?" autocomplete="off">
+      </label>
+      <div class="role-cards">
+        <button class="role-card artist" id="pick-artist">
+          <span class="role-emoji">🎨</span>
+          <b>Artist</b>
+          <small>Get a secret word, doodle it, send the link.</small>
+        </button>
+        <button class="role-card guesser" id="pick-guesser">
+          <span class="role-emoji">🔍</span>
+          <b>Guesser</b>
+          <small>Open your partner's doodle and guess the word.</small>
+        </button>
+      </div>
+    </section>
+
+    <!-- WAITING (guesser without a doodle yet) -->
+    <section class="screen center" data-screen="waiting">
+      <div class="big-emoji wiggle">📭</div>
+      <h2>Waiting for a doodle…</h2>
+      <p>Your artist draws, then sends you a link. Tap it and the doodle opens right here.</p>
+      <button class="btn btn-primary btn-xl" id="btn-invite">💌 Ask <span class="partner">your partner</span> to draw</button>
+      <div class="divider">or paste a doodle link</div>
+      <div class="paste-row">
+        <input id="paste-link" placeholder="Paste link here" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <button class="btn" id="btn-open-paste">Open</button>
+      </div>
+    </section>
+
+    <!-- LEVEL -->
+    <section class="screen" data-screen="level">
+      <h2>Pick a challenge</h2>
+      <p class="kicker" id="level-kicker"></p>
+      <label class="field name-inline hidden">
+        <span>Your name</span>
+        <input class="name-input" maxlength="16" placeholder="So your partner knows it's you">
+      </label>
+      <div class="level-cards">
+        <button class="level-card l1" data-level="1"><span>🍎</span><div><b>Easy</b><small>Apple, cat, sun… · 1 pt per heart left</small></div></button>
+        <button class="level-card l2" data-level="2"><span>🎸</span><div><b>Medium</b><small>Guitar, octopus, volcano… · 2 pts per heart</small></div></button>
+        <button class="level-card l3" data-level="3"><span>🦒</span><div><b>Tricky</b><small>Mermaid, picnic, road trip… · 3 pts per heart</small></div></button>
+      </div>
+    </section>
+
+    <!-- WORD -->
+    <section class="screen center" data-screen="word">
+      <p class="kicker">Your secret word</p>
+      <div class="word-card" id="word-card">
+        <small id="word-cat"></small>
+        <div id="word-text"></div>
+      </div>
+      <p class="hint">Shh 🤫 Don't write it, draw it. No letters or numbers!</p>
+      <button class="btn btn-primary btn-xl" id="btn-start-draw">Start drawing ✏️</button>
+      <button class="btn btn-ghost" id="btn-reroll">🎲 Different word (<span id="reroll-left">2</span> left)</button>
+    </section>
+
+    <!-- DRAW -->
+    <section class="screen screen-draw" data-screen="draw">
+      <div class="draw-head">
+        <button class="draw-word" id="draw-word-btn" aria-label="Tap to hide or show the word">
+          <small>Drawing · tap to hide</small>
+          <b id="draw-word"></b>
+        </button>
+        <div class="timer" id="draw-timer">0:00</div>
+      </div>
+      <div class="pad-area" id="pad-area">
+        <div class="pad" id="pad">
+          <canvas id="pad-base"></canvas>
+          <canvas id="pad-live"></canvas>
+          <div class="pad-hint" id="pad-hint">Draw with your finger ☝️<small>Two-finger tap = undo</small></div>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="swatches" id="swatches"></div>
+        <div class="tool-row">
+          <div class="sizes" id="sizes"></div>
+          <button class="tool" id="tool-eraser" aria-label="Eraser">🧽</button>
+          <button class="tool" id="tool-undo" aria-label="Undo">↩️</button>
+          <button class="tool" id="tool-clear" aria-label="Clear">🗑️</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-xl" id="btn-done" disabled>Done, send it 💌</button>
+    </section>
+
+    <!-- SHARE -->
+    <section class="screen" data-screen="share">
+      <h2 id="share-title">Doodle packed! 📦</h2>
+      <div class="polaroid">
+        <div class="paper"><canvas id="share-preview"></canvas></div>
+        <span id="share-caption"></span>
+      </div>
+      <p>Send this link to <b class="partner">your partner</b>. The whole drawing lives inside it, no server needed.</p>
+      <button class="btn btn-primary btn-xl" id="btn-share">Send to&nbsp;<span class="partner">your partner</span>&nbsp;💌</button>
+      <button class="btn" id="btn-copy">📋 Copy link</button>
+      <p class="tiny" id="share-size"></p>
+      <button class="btn btn-ghost" id="btn-share-home">Back home</button>
+    </section>
+
+    <!-- ENVELOPE (guesser receives) -->
+    <section class="screen center" data-screen="envelope">
+      <button class="envelope wiggle" id="envelope-btn" aria-label="Open the doodle">💌</button>
+      <h2 id="env-title"></h2>
+      <p id="env-sub" class="kicker"></p>
+      <div class="card last-round hidden" id="env-last"></div>
+      <label class="field name-inline hidden">
+        <span>Your name</span>
+        <input class="name-input" maxlength="16" placeholder="So your partner knows it's you">
+      </label>
+      <button class="btn btn-primary btn-xl" id="btn-open-env">Open it 👀</button>
+    </section>
+
+    <!-- GUESS -->
+    <section class="screen screen-guess" data-screen="guess">
+      <div class="guess-head">
+        <div class="hearts" id="hearts"></div>
+        <div class="chip" id="guess-cat"></div>
+        <button class="icon-btn" id="btn-replay" aria-label="Replay the drawing">🔁</button>
+      </div>
+      <div class="pad-area" id="view-area">
+        <div class="pad view"><canvas id="view"></canvas></div>
+      </div>
+      <div class="blanks" id="blanks"></div>
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+      <form class="guess-form" id="guess-form" autocomplete="off">
+        <input id="guess-input" placeholder="Your guess…" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" enterkeyhint="send">
+        <button class="btn btn-primary" type="submit">Guess</button>
+      </form>
+      <button class="btn btn-ghost small" id="btn-giveup">Give up 🏳️</button>
+    </section>
+
+    <!-- RESULT (guesser) -->
+    <section class="screen" data-screen="result">
+      <div class="result-badge" id="res-badge"></div>
+      <h2 id="res-title"></h2>
+      <div class="polaroid small">
+        <div class="paper"><canvas id="res-canvas"></canvas></div>
+        <span id="res-word"></span>
+      </div>
+      <p class="points" id="res-points"></p>
+      <p class="kicker" id="res-team"></p>
+      <div class="card react">
+        <p id="res-react-label">React to the art</p>
+        <div class="reactions" id="reactions"></div>
+        <input id="res-note" maxlength="80" placeholder="Leave a little note (optional)">
+      </div>
+      <button class="btn btn-primary btn-xl" id="btn-draw-back">Draw one back ✏️</button>
+      <button class="btn" id="btn-send-result">💌 Send my result to&nbsp;<span class="partner">your partner</span></button>
+    </section>
+
+    <!-- REPORT (artist receives result) -->
+    <section class="screen" data-screen="report">
+      <div class="result-badge" id="rep-badge"></div>
+      <h2 id="rep-title"></h2>
+      <p class="kicker" id="rep-sub"></p>
+      <div class="polaroid small hidden" id="rep-polaroid">
+        <div class="paper"><canvas id="rep-canvas"></canvas></div>
+        <span id="rep-word"></span>
+      </div>
+      <div class="bubble hidden" id="rep-note"></div>
+      <p class="kicker" id="rep-team"></p>
+      <button class="btn btn-primary btn-xl" id="btn-rep-next">Next round ▶</button>
+    </section>
+
+    <!-- GALLERY -->
+    <section class="screen" data-screen="gallery">
+      <h2>Our gallery 🖼️</h2>
+      <p class="kicker">Every doodle you've sent or guessed on this phone.</p>
+      <div class="gallery-grid" id="gallery-grid"></div>
+      <p class="empty hidden" id="gallery-empty">Nothing here yet. Go make some art!</p>
+    </section>
+
+    <!-- ERROR -->
+    <section class="screen center" data-screen="error">
+      <div class="big-emoji">😕</div>
+      <h2 id="err-title"></h2>
+      <p id="err-text"></p>
+      <button class="btn btn-primary" id="btn-err-home">Go home</button>
+    </section>
+  </main>
+</div>
+
+<dialog id="viewer">
+  <div class="polaroid">
+    <div class="paper"><canvas id="viewer-canvas"></canvas></div>
+    <span id="viewer-word"></span>
+  </div>
+  <p class="kicker" id="viewer-meta"></p>
+  <div class="bubble hidden" id="viewer-note"></div>
+  <div class="row">
+    <button class="btn" id="viewer-replay">🔁 Replay</button>
+    <button class="btn btn-primary" id="viewer-close">Close</button>
+  </div>
+</dialog>
+
+<div id="toast" role="status"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
